@@ -5,7 +5,8 @@ namespace Server
 {
     public class Server : BaseScript
     {
-        int[] CHAT_COLOR_ERROR = new[] { 0, 100, 255 };
+        int[] CHAT_COLOR_ERROR = new[] { 255, 0, 76 };
+        int[] CHAT_COLOR_SUCCESS = new[] { 0, 100, 255 };
 
         PlayerList _playerList;
         int _maximumJailTime = 300;
@@ -29,7 +30,7 @@ namespace Server
 
         private void SentChatMessageToAll(string message)
         {
-            TriggerClientEvent("chatMessage", "[Judge]", new[] { 0, 100, 255 }, message);
+            TriggerClientEvent("chatMessage", "[Judge]", CHAT_COLOR_SUCCESS, message);
         }
 
         [Command("jail", Restricted = true)]
