@@ -1,4 +1,5 @@
 ﻿using CitizenFX.Core;
+using System;
 using static CitizenFX.Core.Native.API;
 
 namespace Server
@@ -20,7 +21,20 @@ namespace Server
                 _maximumJailTime = maximumJailTime;
             }
 
+            EventHandlers["fixterjail:jail:incarcerate"] += new Action<Player, int, int, string>(OnIncarcerateEvent);
+
             Debug.WriteLine("LOADED SERVER JAIL");
+        }
+
+        private void OnIncarcerateEvent([FromSource] Player player, int playerId, int jailTime, string reason)
+        {
+            if (!IsPlayerAceAllowed(player.Handle, "fixterjail.jail"))
+            {
+                SendChatError(player, "Player does not have permissions to jail.");
+                return;
+            }
+            
+            IncarceratePlayer(player, playerId, jailTime, reason);
         }
 
         private void SendChatError(Player player, string message)
@@ -52,34 +66,40 @@ namespace Server
                 return;
             }
 
-            Player playerToJail = _playerList[playerId];
-
-            if (playerToJail == null)
-            {
-                SendChatError(player, "Invalid Player ID, Player not found.");
-                return;
-            }
-
             if (!int.TryParse(args[1], out jailTime))
             {
                 SendChatError(player, "Invalid Jail Time, must be a number.");
                 return;
             }
 
-            if (jailTime == 0)
-            {
-                SendChatError(player, "Jail time must be greater than 0.");
-                return;
-            }
-
-            jailTime = jailTime > _maximumJailTime ? _maximumJailTime : jailTime;
-
             for (int i = 2; i < args.Length; i++)
             {
                 jailReason += args[i] + " ";
             }
 
-            playerToJail.TriggerEvent("DOJ.Jail.PlayerJailed", jailTime);
+            IncarceratePlayer(player, playerId, jailTime, jailReason);
+        }
+
+        private void IncarceratePlayer(Player playerWhoSentCommand, int playerId, int jailTime, string jailReason)
+        {
+
+            Player playerToJail = _playerList[playerId];
+
+            if (playerToJail == null)
+            {
+                SendChatError(playerWhoSentCommand, "Invalid Player ID, Player not found.");
+                return;
+            }
+
+            if (jailTime == 0)
+            {
+                SendChatError(playerWhoSentCommand, "Jail time must be greater than 0.");
+                return;
+            }
+
+            jailTime = jailTime > _maximumJailTime ? _maximumJailTime : jailTime;
+
+            playerToJail.TriggerEvent("fixterjail:jail:imprison", jailTime);
             SentChatMessageToAll($"{playerToJail.Name} has been jailed for {jailTime} seconds for '{jailReason}'.");
         }
     }
