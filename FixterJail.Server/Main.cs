@@ -1,10 +1,9 @@
 ﻿using CitizenFX.Core;
-using System;
 using static CitizenFX.Core.Native.API;
 
-namespace Server
+namespace FixterJail.Server
 {
-    public class Server : BaseScript
+    public class Main : BaseScript
     {
         int[] CHAT_COLOR_ERROR = new[] { 255, 0, 76 };
         int[] CHAT_COLOR_SUCCESS = new[] { 0, 100, 255 };
@@ -12,7 +11,7 @@ namespace Server
         PlayerList _playerList;
         int _maximumJailTime = 300;
 
-        public Server()
+        public Main()
         {
             _playerList = Players;
 
@@ -22,18 +21,25 @@ namespace Server
             }
 
             EventHandlers["fixterjail:jail:incarcerate"] += new Action<Player, int, int, string>(OnIncarcerateEvent);
+            EventHandlers["fixterjail:jail:connect"] += new Action<Player>(OnConnect);
 
             Debug.WriteLine("LOADED SERVER JAIL");
         }
 
+        private void OnConnect([FromSource] Player player)
+        {
+            bool isCommandAllowed = IsPlayerAceAllowed(player.Handle, "command.jail");
+            player.TriggerEvent("fixterjail:jail:useNui", isCommandAllowed);
+        }
+
         private void OnIncarcerateEvent([FromSource] Player player, int playerId, int jailTime, string reason)
         {
-            if (!IsPlayerAceAllowed(player.Handle, "fixterjail.jail"))
+            if (!IsPlayerAceAllowed(player.Handle, "command.jail"))
             {
                 SendChatError(player, "Player does not have permissions to jail.");
                 return;
             }
-            
+
             IncarceratePlayer(player, playerId, jailTime, reason);
         }
 

@@ -5,10 +5,12 @@ description "https://github.com/fixterjake/FixterJail"
 
 ui_page("ui/index.html")
 
-client_scripts "FixterJail.Client.net.dll" 
+client_script "FixterJail.Client.net.dll" 
 server_script "FixterJail.Server.net.dll"
 
 files {
 	"ui/**/*",
 	"Newtonsoft.Json.dll"
 }
+
+max_jail_time "600" -- 10 minutes

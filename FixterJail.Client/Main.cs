@@ -1,26 +1,15 @@
 ﻿using CitizenFX.Core;
 using CitizenFX.Core.Native;
-using static CitizenFX.Core.Native.API;
 using CitizenFX.Core.UI;
 using Newtonsoft.Json;
-using System;
-using System.Threading.Tasks;
-using System.Collections.Generic;
+using System.Runtime.Serialization;
+using static CitizenFX.Core.Native.API;
 
-namespace Client
+namespace FixterJail.Client
 {
-    /*
-     * Changes to make
-     * - Positions to config or meta data
-     * - tick controller, we don't need to check 24/7
-     * - use API methods
-     * - use Newtonsoft.Json correctly, as they are already using it
-     * */
-
-
-    public class Client : BaseScript
+    public class Main : BaseScript
     {
-        public static Client Instance;
+        public static Main Instance;
 
         private int[] CHAT_COLOR_ERROR = new[] { 255, 0, 76 };
         private Blip _prisonBlip;
@@ -30,8 +19,9 @@ namespace Client
         private int _jailLength;
 
         private bool _jailTimeProcessorRunning;
-        private bool _drawScaleform;
-        
+
+        private int _scaleform;
+
         private readonly Vector3 _jailPos = new Vector3(1662.6f, 2615.29f, 45.50f);
         private readonly Vector3 _releasePos = new Vector3(1848.62f, 2585.95f, 45.67f);
         private readonly Vector3 _missionRow = new Vector3(459.79f, -989.13f, 24.91f);
@@ -39,11 +29,16 @@ namespace Client
         private readonly Vector3 _paletoPd = new Vector3(-449.48f, 6012.42f, 31.72f);
         private readonly Vector3 _bolingbrokePrison = new Vector3(1792.49f, 2593.75f, 45.8f);
 
-        public Client()
+        public Main()
         {
+            Debug.WriteLine("LOADED CLIENT JAIL");
+
+            JsonConvert.DefaultSettings = () => new JsonSerializerSettings { MaxDepth = 128 };
+
             Instance = this;
-            
+
             EventHandlers["fixterjail:jail:imprison"] += new Action<int>(JailPlayer);
+            EventHandlers["fixterjail:jail:useNui"] += new Action<bool>(OnPlayerCanUseNui);
             EventHandlers["onClientResourceStart"] += new Action<string>(OnClientResourceStart);
             EventHandlers["onClientResourceStop"] += new Action<string>(OnClientResourceStop);
 
@@ -67,18 +62,26 @@ namespace Client
                     return;
                 }
 
-                if (!int.TryParse(data["jailTime"].ToString(), out jailTime))
+                if (!int.TryParse(data["time"].ToString(), out jailTime))
                 {
                     SendChatError("Invalid Jail Time, must be a number.");
                     return;
                 }
 
                 NUIClose();
-                Screen.ShowNotification("Subject has been Jailed for " + jailTime + " seconds.");
+                Screen.ShowNotification("The subject has been Jailed for " + jailTime + " seconds.");
                 TriggerServerEvent("fixterjail:jail:incarcerate", playerId, jailTime, reason);
+
+                cb("ok");
             });
 
-            InternalGameEvents.PlayerJoined += InternalGameEvents_PlayerJoined;
+            TriggerServerEvent("fixterjail:jail:connect");
+        }
+
+        private void OnPlayerCanUseNui(bool canUseNui)
+        {
+            if (canUseNui)
+                AttachTickHandler(AsyncCheckLocation);
         }
 
         private void OnClientResourceStart(string resourceName)
@@ -101,14 +104,6 @@ namespace Client
             {
                 if (_prisonBlip.Exists())
                     _prisonBlip.Delete();
-            }
-        }
-
-        private void InternalGameEvents_PlayerJoined()
-        {
-            if (IsAceAllowed("fixterjail.jail"))
-            {
-                AttachTickHandler(AsyncCheckLocation);
             }
         }
 
@@ -150,33 +145,32 @@ namespace Client
             await Delay(delay);
         }
 
-        private async Task ShowBigMessageScaleform(string mainText, string description)
+        private async Task SetupAndDisplayBigMessageScaleform(string mainText, string description)
         {
-            int scaleform = API.RequestScaleformMovie("mp_big_message_freemode");
-            while (!API.HasScaleformMovieLoaded(scaleform))
+            _scaleform = API.RequestScaleformMovie("mp_big_message_freemode");
+            while (!API.HasScaleformMovieLoaded(_scaleform))
             {
                 await Delay(10);
             }
-            API.PushScaleformMovieFunction(scaleform, "SHOW_SHARD_WASTED_MP_MESSAGE");
+            API.PushScaleformMovieFunction(_scaleform, "SHOW_SHARD_WASTED_MP_MESSAGE");
             API.PushScaleformMovieFunctionParameterString(mainText);
             API.PushScaleformMovieFunctionParameterString(description);
             API.PopScaleformMovieFunctionVoid();
 
-            _drawScaleform = true;
+            AttachTickHandler(AsyncDisplayBigMessageScaleform);
+        }
 
-            while (_drawScaleform)
+        async Task AsyncDisplayBigMessageScaleform()
+        {
+            API.DrawScaleformMovieFullscreen(_scaleform, 255, 255, 255, 255, 0);
+            Screen.DisplayHelpTextThisFrame("Press ~INPUT_CONTEXT~ to continue.");
+
+            if (Game.IsControlJustPressed(0, Control.Context))
             {
-                API.DrawScaleformMovieFullscreen(scaleform, 255, 255, 255, 255, 0);
-                Screen.DisplayHelpTextThisFrame("Press ~y~INPUT_CONTEXT~w~ to continue.");
-                await Delay(10);
-                if (Game.IsControlJustPressed(0, Control.Context))
-                {
-                    _drawScaleform = false;
-                    API.PlaySoundFrontend(-1, "TextHit", "WastedSounds", true);
-                    break;
-                }
+                API.PlaySoundFrontend(-1, "TextHit", "WastedSounds", true);
+                API.SetScaleformMovieAsNoLongerNeeded(ref _scaleform);
+                DetachTickHandler(AsyncDisplayBigMessageScaleform);
             }
-            API.SetScaleformMovieAsNoLongerNeeded(ref scaleform);
         }
 
         private async void JailPlayer(int length)
@@ -186,7 +180,7 @@ namespace Client
             await TeleportPlayerToPosition(_jailPos, 2500);
             _playerJailed = true;
             ProcessJailTime();
-            await ShowBigMessageScaleform("~r~JAILED", "You've been jailed for " + _jailLength + " seconds");
+            await SetupAndDisplayBigMessageScaleform("~r~JAILED", "You've been jailed for " + _jailLength + " seconds");
             AttachTickHandler(CheckIfPlayerIsAttemptingToEscape);
         }
 
@@ -194,13 +188,17 @@ namespace Client
         {
             _nui = !_nui;
             API.SetNuiFocus(_nui, _nui);
-            API.SendNuiMessage(JsonConvert.SerializeObject(new { type = _nui ? "DISPLAY_JAIL_UI" : "DISABLE_ALL_UI" }));
+            NuiMessage nuiMessage = new NuiMessage();
+            nuiMessage.Type = _nui ? "DISPLAY_JAIL_UI" : "DISABLE_ALL_UI";
+            API.SendNuiMessage(JsonConvert.SerializeObject(nuiMessage));
         }
 
         private void NUIClose()
         {
             _nui = false;
-            API.SendNuiMessage(JsonConvert.SerializeObject(new { type = "DISABLE_ALL_UI" }));
+            NuiMessage nuiMessage = new NuiMessage();
+            nuiMessage.Type = "DISABLE_ALL_UI";
+            API.SendNuiMessage(JsonConvert.SerializeObject(nuiMessage));
             API.SetNuiFocus(false, false);
         }
 
@@ -223,7 +221,7 @@ namespace Client
                 {
                     _playerJailed = false;
                     await TeleportPlayerToPosition(_releasePos, 1800);
-                    await ShowBigMessageScaleform("~b~RELEASED", "You've been released from jail.");
+                    await SetupAndDisplayBigMessageScaleform("~b~RELEASED", "You've been released from jail.");
                     DetachTickHandler(CheckIfPlayerIsAttemptingToEscape);
                     break;
                 }
@@ -234,11 +232,11 @@ namespace Client
 
         public async Task CheckIfPlayerIsAttemptingToEscape()
         {
-            if (!LocalPlayer.Character.IsInRangeOf(_jailPos, 140f))
+            if (!LocalPlayer.Character.IsInRangeOf(_jailPos, 140f) && _playerJailed)
             {
                 await TeleportPlayerToPosition(_jailPos, 2000);
                 _jailLength += 60;
-                await ShowBigMessageScaleform("~r~ESCAPE ATTEMPT FAILED", "Your sentence has been extended by 60 seconds.");
+                await SetupAndDisplayBigMessageScaleform("~r~ESCAPE ATTEMPT FAILED", "Your sentence has been extended by 60 seconds.");
             }
 
             await Delay(20);
@@ -246,41 +244,36 @@ namespace Client
 
         private async Task AsyncCheckLocation()
         {
-            if (!IsAceAllowed("fixterjail.jail"))
+            if (LocalPlayer.Character.IsInRangeOf(_missionRow, 1.5f) && !_nui)
             {
-                DetachTickHandler(AsyncCheckLocation);
-            }
-            
-            if (LocalPlayer.Character.IsInRangeOf(_missionRow, 1f) && !_nui)
-            {
-                Screen.DisplayHelpTextThisFrame("Press ~y~E~w~ to open jail interface.");
+                Screen.DisplayHelpTextThisFrame("Press ~INPUT_CONTEXT~ to open jail interface.");
                 if (Game.IsControlPressed(0, Control.Context))
                 {
                     ToggleNui();
                 }
             }
 
-            if (LocalPlayer.Character.IsInRangeOf(_sandyPd, 1f) && !_nui)
+            if (LocalPlayer.Character.IsInRangeOf(_sandyPd, 1.5f) && !_nui)
             {
-                Screen.DisplayHelpTextThisFrame("Press ~y~E~w~ to open jail interface.");
+                Screen.DisplayHelpTextThisFrame("Press ~INPUT_CONTEXT~ to open jail interface.");
                 if (Game.IsControlPressed(0, Control.Context))
                 {
                     ToggleNui();
                 }
             }
 
-            if (LocalPlayer.Character.IsInRangeOf(_paletoPd, 1f) && !_nui)
+            if (LocalPlayer.Character.IsInRangeOf(_paletoPd, 1.5f) && !_nui)
             {
-                Screen.DisplayHelpTextThisFrame("Press ~y~E~w~ to open jail interface.");
+                Screen.DisplayHelpTextThisFrame("Press ~INPUT_CONTEXT~ to open jail interface.");
                 if (Game.IsControlPressed(0, Control.Context))
                 {
                     ToggleNui();
                 }
             }
 
-            if (LocalPlayer.Character.IsInRangeOf(_bolingbrokePrison, 1f) && !_nui)
+            if (LocalPlayer.Character.IsInRangeOf(_bolingbrokePrison, 1.5f) && !_nui)
             {
-                Screen.DisplayHelpTextThisFrame("Press ~y~E~w~ to open jail interface.");
+                Screen.DisplayHelpTextThisFrame("Press ~INPUT_CONTEXT~ to open jail interface.");
                 if (Game.IsControlPressed(0, Control.Context))
                 {
                     ToggleNui();
@@ -288,5 +281,12 @@ namespace Client
             }
             await Task.FromResult(0);
         }
+    }
+
+    [DataContract]
+    public class NuiMessage
+    {
+        [DataMember(Name = "type")]
+        public string Type;
     }
 }
