@@ -23,8 +23,8 @@ namespace Client
         public static Client Instance;
 
         private int[] CHAT_COLOR_ERROR = new[] { 255, 0, 76 };
-        
-        private bool _firstTick;
+        private Blip _prisonBlip;
+
         private bool _playerJailed;
         private bool _nui;
         private int _jailLength;
@@ -44,6 +44,8 @@ namespace Client
             Instance = this;
             
             EventHandlers["fixterjail:jail:imprison"] += new Action<int>(JailPlayer);
+            EventHandlers["onClientResourceStart"] += new Action<string>(OnClientResourceStart);
+            EventHandlers["onClientResourceStop"] += new Action<string>(OnClientResourceStop);
 
             RegisterNuiCallbackType("closeUI");
             EventHandlers["__cfx_nui:closeUI"] += new Action<IDictionary<string, object>, CallbackDelegate>((data, cb) =>
@@ -77,6 +79,29 @@ namespace Client
             });
 
             InternalGameEvents.PlayerJoined += InternalGameEvents_PlayerJoined;
+        }
+
+        private void OnClientResourceStart(string resourceName)
+        {
+            if (GetCurrentResourceName() != resourceName) return;
+
+            API.SetNuiFocus(false, false);
+
+            _prisonBlip = World.CreateBlip(_bolingbrokePrison);
+            _prisonBlip.Sprite = BlipSprite.Key;
+            _prisonBlip.Color = BlipColor.TrevorOrange;
+            _prisonBlip.IsShortRange = true;
+            _prisonBlip.Name = "Prison";
+        }
+
+        private void OnClientResourceStop(string resourceName)
+        {
+            if (GetCurrentResourceName() != resourceName) return;
+            if (_prisonBlip != null)
+            {
+                if (_prisonBlip.Exists())
+                    _prisonBlip.Delete();
+            }
         }
 
         private void InternalGameEvents_PlayerJoined()
@@ -197,7 +222,6 @@ namespace Client
                 if (_jailLength == 0)
                 {
                     _playerJailed = false;
-                    _firstTick = false;
                     await TeleportPlayerToPosition(_releasePos, 1800);
                     await ShowBigMessageScaleform("~b~RELEASED", "You've been released from jail.");
                     DetachTickHandler(CheckIfPlayerIsAttemptingToEscape);
@@ -210,27 +234,11 @@ namespace Client
 
         public async Task CheckIfPlayerIsAttemptingToEscape()
         {
-            if (!_firstTick)
+            if (!LocalPlayer.Character.IsInRangeOf(_jailPos, 140f))
             {
-                API.SetNuiFocus(false, false);
-                
-                Blip blip = World.CreateBlip(_bolingbrokePrison);
-                blip.Sprite = BlipSprite.Key;
-                blip.Color = BlipColor.TrevorOrange;
-                blip.IsShortRange = true;
-                blip.Name = "Prison";
-                
-                _firstTick = true;
-            }
-
-            if (_playerJailed)
-            {
-                if (!LocalPlayer.Character.IsInRangeOf(_jailPos, 140f))
-                {
-                    await TeleportPlayerToPosition(_jailPos, 2000);
-                    _jailLength += 60;
-                    await ShowBigMessageScaleform("~r~ESCAPE ATTEMPT FAILED", "Your sentence has been extended by 60 seconds.");
-                }
+                await TeleportPlayerToPosition(_jailPos, 2000);
+                _jailLength += 60;
+                await ShowBigMessageScaleform("~r~ESCAPE ATTEMPT FAILED", "Your sentence has been extended by 60 seconds.");
             }
 
             await Delay(20);
