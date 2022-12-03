@@ -5,8 +5,8 @@ description "https://github.com/fixterjake/FixterJail"
 
 ui_page("ui/index.html")
 
-client_scripts "Fixter.Jail.Client.net.dll" 
-server_script "Fixter.Jail.Server.net.dll"
+client_scripts "FixterJail.Client.net.dll" 
+server_script "FixterJail.Server.net.dll"
 
 files {
 	"ui/**/*",
