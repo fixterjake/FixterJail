@@ -1,98 +1,85 @@
-﻿using System;
-using System.Runtime.Remoting.Metadata.W3cXsd2001;
-using System.Threading.Tasks;
-using CitizenFX.Core;
-using CitizenFX.Core.Native;
+﻿using CitizenFX.Core;
+using static CitizenFX.Core.Native.API;
 
 namespace Server
 {
     public class Server : BaseScript
     {
+        int[] CHAT_COLOR_ERROR = new[] { 0, 100, 255 };
 
-        private string _jailReason = "";
+        PlayerList _playerList;
+        int _maximumJailTime = 300;
 
         public Server()
         {
-            Debug.Write("LOADED SERVER JAIL");
-            EventHandlers["chatMessage"] += new Action<int, string, string>(HandleChatMessage);
-            EventHandlers["DOJ.Jail.SendToServer"] += new Action<int, int, string>(SendToServer);
+            _playerList = Players;
+
+            if (int.TryParse(GetResourceMetadata(GetCurrentResourceName(), "max_jail_time", 0), out int maximumJailTime))
+            {
+                _maximumJailTime = maximumJailTime;
+            }
+
+            Debug.WriteLine("LOADED SERVER JAIL");
         }
 
-        private async void HandleChatMessage(int source, string color, string message)
+        private void SendChatError(Player player, string message)
         {
-            int _id;
-            int _jailTime;
-            string[] args = message.Split(' ');
-            Player pSrc = new PlayerList()[source];
-
-            if (args[0].ToLower() == "/jail")
-            {
-                API.CancelEvent();
-                int.TryParse(args[1], out _id);
-                Player pl = new PlayerList()[_id];
-                if (args.Length > 1 && pl.Name != null)
-                {
-                    if (int.TryParse(args[2], out _jailTime))
-                    {
-                        if (_jailTime > 600)
-                        {
-                            _jailTime = 600;
-                        }
-                    }
-
-                    if (_jailTime == 0)
-                    {
-                        pl.TriggerEvent("chatMessage", "[Judge]", new[] { 0, 100, 255 },
-                            "Jail time must be larger then zero!");
-                    }
-                    pl.TriggerEvent("DOJ.Jail.Command", _jailTime);
-                    await ProcessReason(args);
-                    foreach (Player plr in Players)
-                    {
-                        plr.TriggerEvent("chatMessage", "[Judge]", new[] { 0, 100, 255 },
-                            $"{pl.Name} has been jailed for {_jailTime} seconds for {_jailReason}.");
-                    }
-
-                    _jailReason = "";
-                }
-                else
-                {
-                    pSrc.TriggerEvent("chatMessage", "[Judge]", new[] { 0, 100, 255 }, "Correct usage: /jail [id] [time] [reason]");
-                }
-            }
-            _jailReason = "";
+            player.TriggerEvent("chatMessage", "[Judge]", CHAT_COLOR_ERROR, message);
         }
 
-        private async Task ProcessReason(string[] args)
+        private void SentChatMessageToAll(string message)
         {
-            for (int i = 3; i < args.Length; i++)
-            {
-                if (i == args.Length)
-                {
-                    _jailReason += args[i];
-                }
-                else
-                {
-                    _jailReason += args[i] + " ";
-                }
-                await Delay(10);
-            }
+            TriggerClientEvent("chatMessage", "[Judge]", new[] { 0, 100, 255 }, message);
         }
 
-        public void SendToServer(int id, int length, string reason)
+        [Command("jail", Restricted = true)]
+        private void JailCommand([FromSource] Player player, string[] args)
         {
-            PlayerList playerlist = new PlayerList();
-            Player player = playerlist[id];
+            int playerId;
+            int jailTime;
+            string jailReason = "";
 
-            if (player.Name != null)
+            if (args.Length < 3)
             {
-                player.TriggerEvent("DOJ.Jail.PlayerJailed", length);
-
-                foreach (Player pl in Players)
-                {
-                    pl.TriggerEvent("chatMessage", "[Judge]", new[] { 0, 100, 255 }, $"{player.Name} has been jailed for {length} seconds for {reason}.");
-                }
+                SendChatError(player, "Invalid Arguments. Usage: /jail [id] [time] [reason]");
+                return;
             }
+
+            if (!int.TryParse(args[0], out playerId))
+            {
+                SendChatError(player, "Invalid Player ID.");
+                return;
+            }
+
+            Player playerToJail = _playerList[playerId];
+
+            if (playerToJail == null)
+            {
+                SendChatError(player, "Invalid Player ID, Player not found.");
+                return;
+            }
+
+            if (!int.TryParse(args[1], out jailTime))
+            {
+                SendChatError(player, "Invalid Jail Time, must be a number.");
+                return;
+            }
+
+            if (jailTime == 0)
+            {
+                SendChatError(player, "Jail time must be greater than 0.");
+                return;
+            }
+
+            jailTime = jailTime > _maximumJailTime ? _maximumJailTime : jailTime;
+
+            for (int i = 2; i < args.Length; i++)
+            {
+                jailReason += args[i] + " ";
+            }
+
+            playerToJail.TriggerEvent("DOJ.Jail.PlayerJailed", jailTime);
+            SentChatMessageToAll($"{playerToJail.Name} has been jailed for {jailTime} seconds for '{jailReason}'.");
         }
     }
 }
