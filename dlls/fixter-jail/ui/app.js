@@ -1,3 +1,5 @@
+let currentPlayers = {};
+
 function goToFirstPage() {
 	$("#first").css('display', "block");
 	$("#second").css('display', "none");
@@ -18,13 +20,13 @@ function goToCharIDError() {
 function exampleButton() {
 	var jailtime = $("#editjailtime").val();
 	var jailreason = $("#editjailreason").val()
-	var jailid = $("#enterid").val()
+	var jailId = document.getElementById('enterid').value;
 
 	clearAllFields();
 	$.post("https://fixter-jail/jailNuiCallback", JSON.stringify({
 		time: jailtime,
 		reason: jailreason,
-		id: jailid
+		id: jailId
 	}));
 
 
@@ -32,15 +34,11 @@ function exampleButton() {
 
 
 function checkID() {
-	//Here you should trigger an event and make sure the player id is valid but for now i'll just make sure it's a number
-	var id = $("#enterid").val();
-	console.log(id);
+	var id = document.getElementById('enterid').value;
 	if (id > 0 && Number.isInteger(Number(id))) {
-		console.log('valid');
 		goToSecondPage();
 	}
 	else {
-		console.log('invalid');
 		goToCharIDError();
 	}
 }
@@ -69,6 +67,22 @@ $(function () {
 			$("#idErrorPage").css('display', "none");
 		}
 		else if (event.data.type == "DISPLAY_JAIL_UI") {
+			currentPlayers = event.data.players;
+			var x = document.getElementById("enterid");
+			x.innerHTML = "";
+
+			var option = document.createElement("option");
+			option.value = "";
+			option.text = " -- Select a player -- ";
+			x.add(option);
+
+			for (key in currentPlayers) {
+				var option = document.createElement("option");
+				option.value = key;
+				option.text = currentPlayers[key];
+				x.add(option);
+			}
+
 			goToFirstPage();
 		}
 		else if (event.data.type == "DISPLAY_JAIL_ID_ERROR") {

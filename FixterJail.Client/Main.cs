@@ -7,6 +7,7 @@ namespace FixterJail.Client
     {
         public static Main Instance;
         private Config _config;
+        private PlayerList _playerList;
 
         private int[] CHAT_COLOR_ERROR = new[] { 255, 0, 76 };
         private Blip _prisonBlip;
@@ -33,6 +34,7 @@ namespace FixterJail.Client
             _releasePos = _config.Locations.JailRelease.AsVector();
 
             Instance = this;
+            _playerList = Players;
 
             EventHandlers["fixterjail:jail:imprison"] += new Action<int>(JailPlayer);
             EventHandlers["fixterjail:jail:useNui"] += new Action<bool>(OnPlayerCanUseNui);
@@ -185,7 +187,20 @@ namespace FixterJail.Client
         {
             _nui = !_nui;
             API.SetNuiFocus(_nui, _nui);
-            NuiMessage nuiMessage = new(_nui ? "DISPLAY_JAIL_UI" : "DISABLE_ALL_UI");
+
+            Dictionary<int, string> players = new();
+            if (_nui)
+            {
+                foreach (Player player in _playerList)
+                {
+                    if (player != LocalPlayer)
+                    {
+                        players.Add(player.ServerId, player.Name);
+                    }
+                }
+            }
+
+            NuiMessage nuiMessage = new(_nui ? "DISPLAY_JAIL_UI" : "DISABLE_ALL_UI", players);
             API.SendNuiMessage(nuiMessage.ToJson());
         }
 
