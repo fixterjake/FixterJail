@@ -10,7 +10,8 @@ server_script "FixterJail.Server.net.dll"
 
 files {
 	"ui/**/*",
-	"Newtonsoft.Json.dll"
+	"Newtonsoft.Json.dll",
+	"config.json"
 }
 
 max_jail_time "600" -- 10 minutes

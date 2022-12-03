@@ -1,15 +1,12 @@
-﻿using CitizenFX.Core;
-using CitizenFX.Core.Native;
-using CitizenFX.Core.UI;
-using Newtonsoft.Json;
-using System.Runtime.Serialization;
-using static CitizenFX.Core.Native.API;
+﻿using FixterJail.Client.Extensions;
+using FixterJail.Client.Scripts;
 
 namespace FixterJail.Client
 {
     public class Main : BaseScript
     {
         public static Main Instance;
+        private Config _config;
 
         private int[] CHAT_COLOR_ERROR = new[] { 255, 0, 76 };
         private Blip _prisonBlip;
@@ -22,18 +19,18 @@ namespace FixterJail.Client
 
         private int _scaleform;
 
-        private readonly Vector3 _jailPos = new Vector3(1662.6f, 2615.29f, 45.50f);
-        private readonly Vector3 _releasePos = new Vector3(1848.62f, 2585.95f, 45.67f);
-        private readonly Vector3 _missionRow = new Vector3(459.79f, -989.13f, 24.91f);
-        private readonly Vector3 _sandyPd = new Vector3(1853.11f, 3690.12f, 34.27f);
-        private readonly Vector3 _paletoPd = new Vector3(-449.48f, 6012.42f, 31.72f);
-        private readonly Vector3 _bolingbrokePrison = new Vector3(1792.49f, 2593.75f, 45.8f);
+        private readonly Vector3 _jailPos;
+        private readonly Vector3 _releasePos;
 
         public Main()
         {
             Debug.WriteLine("LOADED CLIENT JAIL");
 
             JsonConvert.DefaultSettings = () => new JsonSerializerSettings { MaxDepth = 128 };
+
+            _config = Configuration.Get;
+            _jailPos = _config.Locations.Jail.AsVector();
+            _releasePos = _config.Locations.JailRelease.AsVector();
 
             Instance = this;
 
@@ -90,7 +87,7 @@ namespace FixterJail.Client
 
             API.SetNuiFocus(false, false);
 
-            _prisonBlip = World.CreateBlip(_bolingbrokePrison);
+            _prisonBlip = World.CreateBlip(new Vector3(1792.49f, 2593.75f, 45.8f));
             _prisonBlip.Sprite = BlipSprite.Key;
             _prisonBlip.Color = BlipColor.TrevorOrange;
             _prisonBlip.IsShortRange = true;
@@ -188,17 +185,15 @@ namespace FixterJail.Client
         {
             _nui = !_nui;
             API.SetNuiFocus(_nui, _nui);
-            NuiMessage nuiMessage = new NuiMessage();
-            nuiMessage.Type = _nui ? "DISPLAY_JAIL_UI" : "DISABLE_ALL_UI";
-            API.SendNuiMessage(JsonConvert.SerializeObject(nuiMessage));
+            NuiMessage nuiMessage = new(_nui ? "DISPLAY_JAIL_UI" : "DISABLE_ALL_UI");
+            API.SendNuiMessage(nuiMessage.ToJson());
         }
 
         private void NUIClose()
         {
             _nui = false;
-            NuiMessage nuiMessage = new NuiMessage();
-            nuiMessage.Type = "DISABLE_ALL_UI";
-            API.SendNuiMessage(JsonConvert.SerializeObject(nuiMessage));
+            NuiMessage nuiMessage = new("DISABLE_ALL_UI");
+            API.SendNuiMessage(nuiMessage.ToJson());
             API.SetNuiFocus(false, false);
         }
 
@@ -244,16 +239,9 @@ namespace FixterJail.Client
 
         private async Task AsyncCheckLocation()
         {
-            if (LocalPlayer.Character.IsInRangeOf(_missionRow, 1.5f) && !_nui)
-            {
-                Screen.DisplayHelpTextThisFrame("Press ~INPUT_CONTEXT~ to open jail interface.");
-                if (Game.IsControlPressed(0, Control.Context))
-                {
-                    ToggleNui();
-                }
-            }
+            Vector3 closestPosition = LocalPlayer.Character.Position.FindClosestPoint(_config.Locations.PoliceDepartments);
 
-            if (LocalPlayer.Character.IsInRangeOf(_sandyPd, 1.5f) && !_nui)
+            if (LocalPlayer.Character.IsInRangeOf(closestPosition, 1.5f) && !_nui)
             {
                 Screen.DisplayHelpTextThisFrame("Press ~INPUT_CONTEXT~ to open jail interface.");
                 if (Game.IsControlPressed(0, Control.Context))
@@ -261,32 +249,8 @@ namespace FixterJail.Client
                     ToggleNui();
                 }
             }
-
-            if (LocalPlayer.Character.IsInRangeOf(_paletoPd, 1.5f) && !_nui)
-            {
-                Screen.DisplayHelpTextThisFrame("Press ~INPUT_CONTEXT~ to open jail interface.");
-                if (Game.IsControlPressed(0, Control.Context))
-                {
-                    ToggleNui();
-                }
-            }
-
-            if (LocalPlayer.Character.IsInRangeOf(_bolingbrokePrison, 1.5f) && !_nui)
-            {
-                Screen.DisplayHelpTextThisFrame("Press ~INPUT_CONTEXT~ to open jail interface.");
-                if (Game.IsControlPressed(0, Control.Context))
-                {
-                    ToggleNui();
-                }
-            }
+            
             await Task.FromResult(0);
         }
-    }
-
-    [DataContract]
-    public class NuiMessage
-    {
-        [DataMember(Name = "type")]
-        public string Type;
     }
 }
