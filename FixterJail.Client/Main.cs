@@ -14,7 +14,7 @@ namespace FixterJail.Client
 
         private bool _playerJailed;
         private bool _nui;
-        private int _jailLength;
+        private int _jailDuration;
 
         private bool _jailTimeProcessorRunning;
 
@@ -36,7 +36,8 @@ namespace FixterJail.Client
             Instance = this;
             _playerList = Players;
 
-            EventHandlers["fixterjail:jail:imprison"] += new Action<int>(JailPlayer);
+            EventHandlers["fixterjail:jail:imprison"] += new Action<int>(OnJailPlayer);
+            EventHandlers["fixterjail:jail:release"] += new Action(OnReleasePlayer);
             EventHandlers["fixterjail:jail:useNui"] += new Action<bool>(OnPlayerCanUseNui);
             EventHandlers["onClientResourceStart"] += new Action<string>(OnClientResourceStart);
             EventHandlers["onClientResourceStop"] += new Action<string>(OnClientResourceStop);
@@ -75,6 +76,12 @@ namespace FixterJail.Client
             });
 
             TriggerServerEvent("fixterjail:jail:connect");
+        }
+
+        private void OnReleasePlayer()
+        {
+            _jailDuration = 0;
+            TriggerServerEvent("fixterjail:jail:playerReleased");
         }
 
         private void OnPlayerCanUseNui(bool canUseNui)
@@ -172,14 +179,14 @@ namespace FixterJail.Client
             }
         }
 
-        private async void JailPlayer(int length)
+        private async void OnJailPlayer(int length)
         {
-            _jailLength = length;
+            _jailDuration = length;
             LocalPlayer.Character.Weapons.RemoveAll();
             await TeleportPlayerToPosition(_jailPos, 2500);
             _playerJailed = true;
             ProcessJailTime();
-            await SetupAndDisplayBigMessageScaleform("~r~JAILED", "You've been jailed for " + _jailLength + " seconds");
+            await SetupAndDisplayBigMessageScaleform("~r~JAILED", "You've been jailed for " + _jailDuration + " seconds");
             AttachTickHandler(CheckIfPlayerIsAttemptingToEscape);
         }
 
@@ -217,17 +224,17 @@ namespace FixterJail.Client
             if (_jailTimeProcessorRunning) return;
             _jailTimeProcessorRunning = true;
 
-            while (_jailLength > 0 && _playerJailed)
+            while (_jailDuration > 0 && _playerJailed)
             {
                 await Delay(1000);
-                _jailLength -= 1;
+                _jailDuration -= 1;
 
-                if (_jailLength % 30 == 0 && _jailLength != 0)
+                if (_jailDuration % 30 == 0 && _jailDuration != 0)
                 {
-                    TriggerEvent("chatMessage", "[Judge]", new[] { 0, 100, 255 }, $"{_jailLength} More seconds until release");
+                    TriggerEvent("chatMessage", "[Judge]", new[] { 0, 100, 255 }, $"{_jailDuration} More seconds until release");
                 }
 
-                if (_jailLength == 0)
+                if (_jailDuration == 0)
                 {
                     _playerJailed = false;
                     await TeleportPlayerToPosition(_releasePos, 1800);
@@ -245,7 +252,7 @@ namespace FixterJail.Client
             if (!LocalPlayer.Character.IsInRangeOf(_jailPos, 140f) && _playerJailed)
             {
                 await TeleportPlayerToPosition(_jailPos, 2000);
-                _jailLength += 60;
+                _jailDuration += 60;
                 await SetupAndDisplayBigMessageScaleform("~r~ESCAPE ATTEMPT FAILED", "Your sentence has been extended by 60 seconds.");
             }
 

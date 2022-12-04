@@ -22,6 +22,7 @@ namespace FixterJail.Server
 
             EventHandlers["fixterjail:jail:incarcerate"] += new Action<Player, int, int, string>(OnIncarcerateEvent);
             EventHandlers["fixterjail:jail:connect"] += new Action<Player>(OnConnect);
+            EventHandlers["fixterjail:jail:playerReleased"] += new Action<Player>(OnPlayerReleased);
 
             Debug.WriteLine("LOADED SERVER JAIL");
         }
@@ -43,6 +44,11 @@ namespace FixterJail.Server
             IncarceratePlayer(player, playerId, jailTime, reason);
         }
 
+        private void OnPlayerReleased([FromSource] Player playerBeingReleased)
+        {
+            SentChatMessageToAll($"{playerBeingReleased.Name} has been released from jail.");
+        }
+
         private void SendChatError(Player player, string message)
         {
             player.TriggerEvent("chatMessage", "[Judge]", CHAT_COLOR_ERROR, message);
@@ -51,6 +57,26 @@ namespace FixterJail.Server
         private void SentChatMessageToAll(string message)
         {
             TriggerClientEvent("chatMessage", "[Judge]", CHAT_COLOR_SUCCESS, message);
+        }
+
+        [Command("unjail", Restricted = true)]
+        private void UnjailCommand([FromSource] Player player, string[] args)
+        {
+            int playerId;
+            
+            if (args.Length == 0)
+            {
+                SendChatError(player, "Invalid Arguments. Usage: /unjail [id]");
+                return;
+            }
+
+            if (!int.TryParse(args[0], out playerId))
+            {
+                SendChatError(player, "Invalid Player ID.");
+                return;
+            }
+
+            ReleasePlayer(player, playerId);
         }
 
         [Command("jail", Restricted = true)]
@@ -107,6 +133,19 @@ namespace FixterJail.Server
 
             playerToJail.TriggerEvent("fixterjail:jail:imprison", jailTime);
             SentChatMessageToAll($"{playerToJail.Name} has been jailed for {jailTime} seconds for '{jailReason}'.");
+        }
+
+        private void ReleasePlayer(Player playerWhoSentCommand, int playerId)
+        {
+            Player playerToRelease = _playerList[playerId];
+
+            if (playerToRelease == null)
+            {
+                SendChatError(playerWhoSentCommand, "Invalid Player ID, Player not found.");
+                return;
+            }
+
+            playerToRelease.TriggerEvent("fixterjail:jail:release");
         }
     }
 }
