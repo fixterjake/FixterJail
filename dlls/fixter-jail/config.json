@@ -1,22 +1,27 @@
 {
+  "jailTimeMax": 600,
   "locations": {
     "policeDepartments": [
       {
+        "label": "Mission Row PD",
         "x": 459.79,
         "y": -989.13,
         "z": 24.91
       },
       {
+        "label": "Sandy Shores PD",
         "x": 1853.11,
         "y": 3690.12,
         "z": 34.27
       },
       {
+        "label": "Paleto Bay PD",
         "x": -449.48,
         "y": 6012.42,
         "z": 31.72
       },
       {
+        "label": "Bolingbroke Penitentiary",
         "x": 1792.49,
         "y": 2593.75,
         "z": 45.8

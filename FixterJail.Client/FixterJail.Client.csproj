@@ -34,4 +34,6 @@
     <Exec Command="xcopy /f /r /y /i bin\Release ..\dlls\fixter-jail" />
   </Target>
 
+  <Import Project="..\FixterJail.Shared\FixterJail.Shared.projitems" Label="Shared" />
+
 </Project>

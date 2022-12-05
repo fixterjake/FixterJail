@@ -15,8 +15,16 @@
     <PackageReference Include="CitizenFX.Core.Server" Version="1.0.6113" ExcludeAssets="runtime" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Reference Include="Newtonsoft.Json">
+      <HintPath>..\_dependancies\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
     <Exec Command="xcopy /f /r /y /i bin\Release ..\dlls\fixter-jail" />
   </Target>
+
+  <Import Project="..\FixterJail.Shared\FixterJail.Shared.projitems" Label="Shared" />
 
 </Project>

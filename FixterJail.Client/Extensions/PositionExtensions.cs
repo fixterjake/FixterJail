@@ -1,4 +1,6 @@
-﻿namespace FixterJail.Client.Extensions
+﻿using FixterJail.Shared.Models;
+
+namespace FixterJail.Client.Extensions
 {
     internal static class PositionExtensions
     {

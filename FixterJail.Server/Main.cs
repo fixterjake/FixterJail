@@ -1,5 +1,5 @@
-﻿using CitizenFX.Core;
-using static CitizenFX.Core.Native.API;
+﻿using FixterJail.Shared.Models;
+using FixterJail.Shared.Scripts;
 
 namespace FixterJail.Server
 {
@@ -9,16 +9,15 @@ namespace FixterJail.Server
         int[] CHAT_COLOR_SUCCESS = new[] { 0, 100, 255 };
 
         PlayerList _playerList;
-        int _maximumJailTime = 300;
+        int _maximumJailTime = 600;
+        Config _config;
 
         public Main()
         {
             _playerList = Players;
 
-            if (int.TryParse(GetResourceMetadata(GetCurrentResourceName(), "max_jail_time", 0), out int maximumJailTime))
-            {
-                _maximumJailTime = maximumJailTime;
-            }
+            _config = Configuration.Get;
+            _maximumJailTime = _config.JailTimeMaximum;
 
             EventHandlers["fixterjail:jail:incarcerate"] += new Action<Player, int, int, string>(OnIncarcerateEvent);
             EventHandlers["fixterjail:jail:connect"] += new Action<Player>(OnConnect);

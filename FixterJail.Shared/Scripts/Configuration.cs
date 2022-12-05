@@ -1,4 +1,6 @@
-﻿namespace FixterJail.Client.Scripts
+﻿using FixterJail.Shared.Models;
+
+namespace FixterJail.Shared.Scripts
 {
     internal class Configuration
     {

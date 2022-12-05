@@ -1,5 +1,6 @@
 ﻿using FixterJail.Client.Extensions;
-using FixterJail.Client.Scripts;
+using FixterJail.Shared.Models;
+using FixterJail.Shared.Scripts;
 
 namespace FixterJail.Client
 {
