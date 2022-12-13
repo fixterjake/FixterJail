@@ -4,7 +4,7 @@ namespace FixterJail.Client.Extensions
 {
     internal static class PositionExtensions
     {
-        public static Vector3 AsVector(this Position position) => new Vector3(position.x, position.y, position.z);
+        public static Vector3 AsVector(this Position position) => new Vector3(position.X, position.Y, position.Z);
 
         public static Vector3 FindClosestPoint(this Vector3 startingPoint, IEnumerable<Vector3> points)
         {

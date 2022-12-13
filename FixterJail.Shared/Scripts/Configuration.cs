@@ -20,6 +20,8 @@ namespace FixterJail.Shared.Scripts
             }
             catch (Exception ex)
             {
+                Debug.WriteLine($"{ex.Message}");
+                Debug.WriteLine($"{ex}");
                 Debug.WriteLine($"Configuration was unable to be loaded.");
                 return (Config)default!;
             }

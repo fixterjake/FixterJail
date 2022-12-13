@@ -24,13 +24,13 @@
     public class Position
     {
         [JsonProperty("x")]
-        public float x { get; set; }
+        public float X { get; set; }
 
         [JsonProperty("y")]
-        public float y { get; set; }
+        public float Y { get; set; }
 
         [JsonProperty("z")]
-        public float z { get; set; }
+        public float Z { get; set; }
     }
 
 }

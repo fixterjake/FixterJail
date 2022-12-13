@@ -11,7 +11,7 @@
         "dependencies": {
           "CitizenFX.Core.Server": "1.0.6113",
           "NETStandard.Library": "2.0.3",
-          "Newtonsoft.Json": "11.0.0.0"
+          "Newtonsoft.Json": "12.0.2"
         },
         "runtime": {
           "FixterJail.Server.net.dll": {}
@@ -24,11 +24,11 @@
           "Microsoft.NETCore.Platforms": "1.1.0"
         }
       },
-      "Newtonsoft.Json/11.0.0.0": {
+      "Newtonsoft.Json/12.0.2": {
         "runtime": {
-          "Newtonsoft.Json.dll": {
-            "assemblyVersion": "11.0.0.0",
-            "fileVersion": "11.0.1.21818"
+          "lib/netstandard2.0/Newtonsoft.Json.dll": {
+            "assemblyVersion": "12.0.0.0",
+            "fileVersion": "12.0.2.23222"
           }
         }
       }
@@ -61,10 +61,12 @@
       "path": "netstandard.library/2.0.3",
       "hashPath": "netstandard.library.2.0.3.nupkg.sha512"
     },
-    "Newtonsoft.Json/11.0.0.0": {
-      "type": "reference",
-      "serviceable": false,
-      "sha512": ""
+    "Newtonsoft.Json/12.0.2": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-rTK0s2EKlfHsQsH6Yx2smvcTCeyoDNgCW7FEYyV01drPlh2T243PR2DiDXqtC5N4GDm4Ma/lkxfW5a/4793vbA==",
+      "path": "newtonsoft.json/12.0.2",
+      "hashPath": "newtonsoft.json.12.0.2.nupkg.sha512"
     }
   }
 }

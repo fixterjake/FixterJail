@@ -13,12 +13,7 @@
 
   <ItemGroup>
     <PackageReference Include="CitizenFX.Core.Server" Version="1.0.6113" ExcludeAssets="runtime" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Reference Include="Newtonsoft.Json">
-      <HintPath>..\_dependancies\Newtonsoft.Json.dll</HintPath>
-    </Reference>
+    <PackageReference Include="Newtonsoft.Json" Version="12.0.2" />
   </ItemGroup>
 
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
