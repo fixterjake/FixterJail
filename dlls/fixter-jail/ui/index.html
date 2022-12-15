@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+  <title>Fixter Jail</title>
+
+  <!-- Bootstrap core CSS-->
+  <link href="vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+
+  <!-- Custom styles for this template-->
+  <link href="css/fixterjail.css" rel="stylesheet">
+  <link rel="stylesheet" href="vendor/fontawesome/css/fontawesome.min.css">
+  <link rel="stylesheet" href="vendor/fontawesome/css/solid.css">
+</head>
+
+<body id="page-top" style="max-height: 200px">
+
+  <!--first page -->
+  <div class="jail-holder" style="background-color: white; display: none;" id="first" name="first">
+    <nav class="navbar navbar-expand navbar-dark bg-dark static-top"
+      style="border-top-left-radius: 20px; border-top-right-radius: 20px">
+      <p class="navbar-brand mr-1" style="width: 100%; align-content: center; text-align: center;">Fixter - Jail</p>
+    </nav>
+
+    <div id="wrapper" style="max-height: 470px">
+      <ul class="sidebar navbar-nav" style="border-bottom-left-radius: 20px">
+        <li class="nav-item active">
+          <a class="nav-link" onclick="goToFirstPage()">
+            <i class="fas fa-fw fa-tachometer-alt"></i>
+            <span>Main Page</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" onclick="closeUI()">
+            <i class="fas fa-times"></i>
+            <span>Close</span></a>
+        </li>
+      </ul>
+      <div id="content-wrapper">
+
+        <div class="container-fluid">
+          <ol class="breadcrumb">
+            <li class="breadcrumb-item">
+              Home
+            </li>
+            <li class="breadcrumb-item active">Jail</li>
+          </ol>
+
+          <div class="card mb-3">
+            <div class="card-header">
+              <i class="fas fa-edit"></i>
+              Enter Player ID
+            </div>
+            <div class="card-body">
+              <div class="form-row">
+                <div class="col-md-10 offset-md-1"><select required class="form-control" id="enterid"></select></div>
+                <div class="col-md-10 offset-md-1"><button class="btn btn-primary" style="width: 100%; margin-top: 10px"
+                    onclick="checkID()">Continue</button></div>
+              </div>
+            </div>
+            <div class="card-footer small text-muted">Enter the Player ID found in the player list</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!--second page -->
+  <div class="jail-holder" style="background-color: white; display: none;" id="second" name="second">
+    <nav class="navbar navbar-expand navbar-dark bg-dark static-top"
+      style="border-top-left-radius: 20px; border-top-right-radius: 20px">
+      <p class="navbar-brand mr-1" style="width: 100%; align-content: center; text-align: center;">Fixter - Jail</p>
+    </nav>
+
+    <div id="wrapper" style="max-height: 470px; overflow-y: auto; overflow-x: hidden;">
+      <ul class="sidebar navbar-nav" style="border-bottom-left-radius: 20px">
+        <li class="nav-item active">
+          <a class="nav-link" onclick="goToFirstPage()">
+            <i class="fas fa-fw fa-tachometer-alt"></i>
+            <span>Main Page</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" onclick="closeUI()">
+            <i class="fas fa-times"></i>
+            <span>Close</span></a>
+        </li>
+      </ul>
+      <div id="content-wrapper">
+
+        <div class="container-fluid">
+          <ol class="breadcrumb">
+            <li class="breadcrumb-item">
+              Home
+            </li>
+            <li class="breadcrumb-item active">Jail</li>
+            <li class="breadcrumb-item active">Submit</li>
+          </ol>
+
+          <div class="card mb-3">
+            <div class="card-header">
+              <i class="fas fa-edit"></i>
+              Edit Jail Details
+            </div>
+            <div class="card-body">
+              <div class="form-row">
+                <!--<div class="col-md-10 offset-md-1"><input class="form-control" type="text" name="editfirstname" required="true" placeholder="First Name" id="editfirstname"></div> 
+	                     <div class="col-md-10 offset-md-1" style="margin-top: 10px"><input class="form-control" type="text" name="editsecondname" required="true" placeholder="Second Name" id="editsecondname"></div>-->
+                <div class="col-md-10 offset-md-1" style="margin-top: 10px"><input class="form-control" type="number"
+                    name="editjailtime" required="true" placeholder="Enter jail time here (max 600)" id="editjailtime">
+                </div>
+                <div class="col-md-10 offset-md-1" style="margin-top: 10px"><input class="form-control" type="text"
+                    name="editjailreason" required="true" placeholder="Short description of jail reason"
+                    id="editjailreason"></div>
+                <div class="col-md-10 offset-md-1"><button class="btn btn-primary" style="width: 100%; margin-top: 10px"
+                    onclick="exampleButton()">Continue</button></div>
+              </div>
+            </div>
+            <div class="card-footer small text-muted">The jail time is in seconds</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+
+
+  <!--Error page -->
+  <div class="jail-holder" style="background-color: white; display: none;" id="idErrorPage" name="idErrorPage">
+    <nav class="navbar navbar-expand navbar-dark bg-dark static-top"
+      style="border-top-left-radius: 20px; border-top-right-radius: 20px">
+      <p class="navbar-brand mr-1" style="width: 100%; align-content: center; text-align: center;">Fixter - Jail</p>
+    </nav>
+
+    <div id="wrapper" style="max-height: 470px; overflow-y: auto; overflow-x: hidden;">
+      <ul class="sidebar navbar-nav" style="border-bottom-left-radius: 20px">
+        <li class="nav-item active">
+          <a class="nav-link" onclick="goToFirstPage()">
+            <i class="fas fa-fw fa-tachometer-alt"></i>
+            <span>Main Page</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" onclick="closeUI()">
+            <i class="fas fa-times"></i>
+            <span>Close</span></a>
+        </li>
+      </ul>
+      <div id="content-wrapper">
+
+        <div class="container-fluid">
+          <ol class="breadcrumb">
+            <li class="breadcrumb-item">
+              Home
+            </li>
+            <li class="breadcrumb-item active">Jail</li>
+            <li class="breadcrumb-item active">Error</li>
+          </ol>
+          <h3 style="text-align: center; width: 100%; color: red; margin-top: 15px;">That player doesn't exist, please
+            submit a valid player ID.</h3>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script type="text/javascript" src="vendor/jquery-1.7.1.min.js"></script>
+  <script src="vendor/jquery-ui.js"></script>
+  <script src="app.js"></script>
+</body>
+
+</html>

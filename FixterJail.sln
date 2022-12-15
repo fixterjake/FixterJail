@@ -1,11 +1,13 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.28803.352
+# Visual Studio Version 17
+VisualStudioVersion = 17.4.33110.190
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Client", "Fixter.Jail.Client\Client.csproj", "{A07BA39C-DFBA-40E9-AB3F-1A9830D0E6AD}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FixterJail.Client", "FixterJail.Client\FixterJail.Client.csproj", "{13FAABEA-4A25-48D6-80E7-C0FD99DF6842}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Server", "FixterJail.Server\Server.csproj", "{DAE90EB3-65AE-48DB-83FB-1241FF73A031}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FixterJail.Server", "FixterJail.Server\FixterJail.Server.csproj", "{580107B7-C4C2-48E5-8525-F01302BC3B44}"
+EndProject
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "FixterJail.Shared", "FixterJail.Shared\FixterJail.Shared.shproj", "{9405A208-2A1D-4429-BE71-1A944C711672}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -13,19 +15,24 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{A07BA39C-DFBA-40E9-AB3F-1A9830D0E6AD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{A07BA39C-DFBA-40E9-AB3F-1A9830D0E6AD}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{A07BA39C-DFBA-40E9-AB3F-1A9830D0E6AD}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{A07BA39C-DFBA-40E9-AB3F-1A9830D0E6AD}.Release|Any CPU.Build.0 = Release|Any CPU
-		{DAE90EB3-65AE-48DB-83FB-1241FF73A031}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{DAE90EB3-65AE-48DB-83FB-1241FF73A031}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{DAE90EB3-65AE-48DB-83FB-1241FF73A031}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{DAE90EB3-65AE-48DB-83FB-1241FF73A031}.Release|Any CPU.Build.0 = Release|Any CPU
+		{13FAABEA-4A25-48D6-80E7-C0FD99DF6842}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{13FAABEA-4A25-48D6-80E7-C0FD99DF6842}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{13FAABEA-4A25-48D6-80E7-C0FD99DF6842}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{13FAABEA-4A25-48D6-80E7-C0FD99DF6842}.Release|Any CPU.Build.0 = Release|Any CPU
+		{580107B7-C4C2-48E5-8525-F01302BC3B44}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{580107B7-C4C2-48E5-8525-F01302BC3B44}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{580107B7-C4C2-48E5-8525-F01302BC3B44}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{580107B7-C4C2-48E5-8525-F01302BC3B44}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {D5FD7EDE-77A7-4EA9-97D9-1180620957BA}
+	EndGlobalSection
+	GlobalSection(SharedMSBuildProjectFiles) = preSolution
+		FixterJail.Shared\FixterJail.Shared.projitems*{13faabea-4a25-48d6-80e7-c0fd99df6842}*SharedItemsImports = 5
+		FixterJail.Shared\FixterJail.Shared.projitems*{580107b7-c4c2-48e5-8525-f01302bc3b44}*SharedItemsImports = 5
+		FixterJail.Shared\FixterJail.Shared.projitems*{9405a208-2a1d-4429-be71-1a944c711672}*SharedItemsImports = 13
 	EndGlobalSection
 EndGlobal
