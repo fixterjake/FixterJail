@@ -23,19 +23,25 @@ namespace FixterJail.Server
             EventHandlers["fixterjail:jail:connect"] += new Action<Player>(OnConnect);
             EventHandlers["fixterjail:jail:playerReleased"] += new Action<Player>(OnPlayerReleased);
 
+            RegisterCommand("jail", new Action<int, List<object>, string>(OnJailCommand), true);
+            RegisterCommand("unjail", new Action<int, List<object>, string>(OnUnjailCommand), true);
+
             Debug.WriteLine("LOADED SERVER JAIL");
         }
 
         private void OnConnect([FromSource] Player player)
         {
             bool isCommandAllowed = IsPlayerAceAllowed(player.Handle, "command.jail");
+            Debug.WriteLine($"^5Player {player.Name} connected. Is command.jail allowed: {isCommandAllowed}^7");
             player.TriggerEvent("fixterjail:jail:useNui", isCommandAllowed);
         }
 
         private void OnIncarcerateEvent([FromSource] Player player, int playerId, int jailTime, string reason)
         {
-            if (!IsPlayerAceAllowed(player.Handle, "command.jail"))
+            bool isCommandAllowed = IsPlayerAceAllowed(player.Handle, "command.jail");
+            if (!isCommandAllowed)
             {
+                Debug.WriteLine($"^1Player {player.Name} tried to incarcerate. Is command.jail allowed: {isCommandAllowed}^7");
                 SendChatError(player, "Player does not have permissions to jail.");
                 return;
             }
@@ -58,18 +64,18 @@ namespace FixterJail.Server
             TriggerClientEvent("chatMessage", "[Judge]", CHAT_COLOR_SUCCESS, message);
         }
 
-        [Command("unjail", Restricted = true)]
-        private void UnjailCommand([FromSource] Player player, string[] args)
+        private void OnUnjailCommand(int source, List<object> args, string raw)
         {
             int playerId;
-            
-            if (args.Length == 0)
+            Player player = _playerList[source];
+
+            if (args.Count == 0)
             {
                 SendChatError(player, "Invalid Arguments. Usage: /unjail [id]");
                 return;
             }
 
-            if (!int.TryParse(args[0], out playerId))
+            if (!int.TryParse($"{args.ElementAt(0)}", out playerId))
             {
                 SendChatError(player, "Invalid Player ID.");
                 return;
@@ -78,34 +84,34 @@ namespace FixterJail.Server
             ReleasePlayer(player, playerId);
         }
 
-        [Command("jail", Restricted = true)]
-        private void JailCommand([FromSource] Player player, string[] args)
+        private void OnJailCommand(int source, List<object> args, string raw)
         {
             int playerId;
             int jailTime;
             string jailReason = "";
+            Player player = _playerList[source];
 
-            if (args.Length < 3)
+            if (args.Count < 3)
             {
                 SendChatError(player, "Invalid Arguments. Usage: /jail [id] [time] [reason]");
                 return;
             }
 
-            if (!int.TryParse(args[0], out playerId))
+            if (!int.TryParse($"{args.ElementAt(0)}", out playerId))
             {
                 SendChatError(player, "Invalid Player ID.");
                 return;
             }
 
-            if (!int.TryParse(args[1], out jailTime))
+            if (!int.TryParse($"{args.ElementAt(1)}", out jailTime))
             {
                 SendChatError(player, "Invalid Jail Time, must be a number.");
                 return;
             }
 
-            for (int i = 2; i < args.Length; i++)
+            for (int i = 2; i < args.Count; i++)
             {
-                jailReason += args[i] + " ";
+                jailReason += $"{args.ElementAt(i)} ";
             }
 
             IncarceratePlayer(player, playerId, jailTime, jailReason);

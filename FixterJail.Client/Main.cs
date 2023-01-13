@@ -70,7 +70,7 @@ namespace FixterJail.Client
                 }
 
                 NUIClose();
-                Screen.ShowNotification("The subject has been Jailed for " + jailTime + " seconds.");
+                
                 TriggerServerEvent("fixterjail:jail:incarcerate", playerId, jailTime, reason);
 
                 cb("ok");
